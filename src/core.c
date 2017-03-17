@@ -723,12 +723,21 @@ core_addr_intern(const char *server, size_t server_len, int port)
 		memcpy(&sin.sin_addr, he->h_addr_list[0],
 		       sizeof(sin.sin_addr));
 	} else {
-		if (!inet_aton(server, &sin.sin_addr)) {
-			fprintf(stderr,
-				"%s.core_addr_intern: invalid server address %s\n",
-				prog_name, server);
-			exit(1);
-		}
+    if (param.ipv6) {
+      if(!inet_pton(AF_INET6, server, &sin.sin_addr)) {
+        fprintf(stderr,
+            "%s.core_addr_intern: invalid ipv6 server address %s\n",
+            prog_name, server);
+        exit(1);
+      }
+    } else {
+      if (!inet_aton(server, &sin.sin_addr)) {
+        fprintf(stderr,
+            "%s.core_addr_intern: invalid server address %s\n",
+            prog_name, server);
+        exit(1);
+      }
+    }
 	}
 	h = hash_enter(server, server_len, port, &sin);
 	if (!h)
@@ -1067,7 +1076,11 @@ core_connect(Conn * s)
 		prev_iteration = iteration;
 	}
 
-	SYSCALL(SOCKET, sd = socket(AF_INET, SOCK_STREAM, 0));
+  if (param.ipv6) { // Create an IPV6 socket 
+    SYSCALL(SOCKET, sd = socket(AF_INET6, SOCK_STREAM, 0));
+  } else { // Default socket
+    SYSCALL(SOCKET, sd = socket(AF_INET, SOCK_STREAM, 0));
+  }
 	if (sd < 0) {
 		if (DBG > 0)
 			fprintf(stderr,
@@ -1099,6 +1112,14 @@ core_connect(Conn * s)
 	 * pipelining requests.  
 	 */
 	optval = 1;
+  /* IPV6 socket option for ipvs sockets */
+  if (param.ipv6) {
+    if (setsockopt(sd, SOL_SOCKET, IPV6_V6ONLY, &optval, sizeof(optval)) < 0) {
+      fprintf(stderr, "%s.core_connect.setsockopt(IPV6_V6ONLY): %s\n",
+          prog_name, strerror(errno));
+      goto failure;
+    }
+  }
 	if (setsockopt(sd, SOL_TCP, TCP_NODELAY, &optval, sizeof(optval)) < 0) {
 		fprintf(stderr, "%s.core_connect.setsockopt(SO_SNDBUF): %s\n",
 			prog_name, strerror(errno));

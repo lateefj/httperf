@@ -90,6 +90,7 @@ Rate_Info;
 
 typedef struct Cmdline_Params
   {
+    int ipv6;	/* Use IPV6 connection */
     int http_version;	/* (default) HTTP protocol version */
     const char *server;	/* (default) hostname */
     const char *server_name; /* fully qualified server name */

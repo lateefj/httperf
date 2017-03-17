@@ -114,6 +114,7 @@ static struct option longopts[] = {
 	{"add-header-file", required_argument, (int *) &param.additional_header_file, 0 },
 	{"burst-length", required_argument, (int *) &param.burst_len, 0},
 	{"client", required_argument, (int *) &param.client, 0},
+	{"ipv6", no_argument, &param.ipv6, 1},
 	{"close-with-reset", no_argument, &param.close_with_reset, 1},
 	{"debug", required_argument, 0, 'd'},
 	{"failure-status", required_argument, &param.failure_status, 0},
@@ -172,7 +173,7 @@ usage(void)
 	printf("Usage: %s "
 	       "[-hdvV] [--add-header S] [--burst-length N] [--client N/N]\n"
 	       "\t[--close-with-reset] [--debug N] [--failure-status N]\n"
-	       "\t[--help] [--hog] [--http-version S] [--max-connections N]\n"
+	       "\t[--help] [--hog] [--ipv6] [--http-version S] [--max-connections N]\n"
 	       "\t[--max-piped-calls N] [--method S] [--no-host-hdr]\n"
 	       "\t[--num-calls N] [--num-conns N] [--session-cookies]\n"
 	       "\t[--period [d|u|e]T1[,T2]|[v]T1,D1[,T2,D2]...[,Tn,Dn]\n"
